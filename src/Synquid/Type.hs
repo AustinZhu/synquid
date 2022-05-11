@@ -23,6 +23,7 @@ data BaseType r = BoolT | IntT | DatatypeT Id [TypeSkeleton r] [r] | TypeVarT Su
 -- | Type skeletons (parametrized by refinements)
 data TypeSkeleton r =
   ScalarT (BaseType r) r |
+  IntersectT (TypeSkeleton r) (TypeSkeleton r) | 
   FunctionT Id (TypeSkeleton r) (TypeSkeleton r) |
   LetT Id (TypeSkeleton r) (TypeSkeleton r) |
   AnyT
@@ -45,11 +46,18 @@ isFunctionType _ = False
 argType (FunctionT _ t _) = t
 resType (FunctionT _ _ t) = t
 
+isIntersectionType (IntersectT _ _) = True
+isIntersectionType _ = False
+
+leftType (IntersectT t1 _) = t1
+rightType (IntersectT _ t2) = t2
+
 hasAny AnyT = True
 hasAny (ScalarT baseT _) = baseHasAny baseT
   where
     baseHasAny (DatatypeT _ tArgs _) = any hasAny tArgs
     baseHasAny _ = False
+hasAny (IntersectT t1 t2) = hasAny t1 || hasAny t2
 hasAny (FunctionT _ tArg tRes) = hasAny tArg || hasAny tRes
 hasAny (LetT _ tDef tBody) = hasAny tDef || hasAny tBody
 
@@ -239,6 +247,7 @@ shape (ScalarT IntT _) = ScalarT IntT ()
 shape (ScalarT BoolT _) = ScalarT BoolT ()
 shape (ScalarT (TypeVarT _ a) _) = ScalarT (TypeVarT Map.empty a) ()
 shape (FunctionT x tArg tFun) = FunctionT x (shape tArg) (shape tFun)
+shape (IntersectT t1 t2) = IntersectT (shape t1) (shape t2)
 shape (LetT _ _ t) = shape t
 shape AnyT = AnyT
 
@@ -304,6 +313,7 @@ typeApplySolution sol (ScalarT (DatatypeT name tArgs pArgs) fml) = ScalarT (Data
 typeApplySolution sol (ScalarT base fml) = ScalarT base (applySolution sol fml)
 typeApplySolution sol (FunctionT x tArg tRes) = FunctionT x (typeApplySolution sol tArg) (typeApplySolution sol tRes)
 typeApplySolution sol (LetT x tDef tBody) = LetT x (typeApplySolution sol tDef) (typeApplySolution sol tBody)
+typeApplySolution sol (IntersectT t1 t2) = IntersectT (typeApplySolution sol t1) (typeApplySolution sol t2)
 typeApplySolution _ AnyT = AnyT
 
 typeFromSchema :: RSchema -> RType
@@ -314,8 +324,10 @@ typeFromSchema (ForallP _ t) = typeFromSchema t
 allRefinementsOf :: RSchema -> [Formula]
 allRefinementsOf sch = allRefinementsOf' $ typeFromSchema sch
 
+allRefinementsOf' :: TypeSkeleton a -> [a]
 allRefinementsOf' (ScalarT _ ref) = [ref]
 allRefinementsOf' (FunctionT _ argT resT) = allRefinementsOf' argT ++ allRefinementsOf' resT
+allRefinementsOf' (IntersectT t1 t2) = allRefinementsOf' t1 ++ allRefinementsOf' t2
 allRefinementsOf' _ = error "allRefinementsOf called on contextual or any type"
 
 -- Set strings: used for "fake" set type for typechecking measures

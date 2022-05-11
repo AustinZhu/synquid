@@ -231,6 +231,7 @@ instance Pretty (BaseType Formula) where
 prettySType :: SType -> Doc
 prettySType (ScalarT base _) = pretty base
 prettySType (FunctionT _ t1 t2) = hlParens (pretty t1 <+> operator "->" <+> pretty t2)
+prettySType (IntersectT t1 t2) = hlParens (pretty t1 <+> operator "&" <+> pretty t2)
 prettySType AnyT = text "_"
 
 instance Pretty SType where
@@ -254,6 +255,7 @@ prettyTypeAt n t = condHlParens (n' <= n) (
     ScalarT base fml -> hlBraces (pretty base <> operator "|" <> pretty fml)
     AnyT -> text "_"
     FunctionT x t1 t2 -> text x <> operator ":" <> prettyTypeAt n' t1 <+> operator "->" <+> prettyTypeAt 0 t2
+    IntersectT t1 t2 -> prettyTypeAt n' t1 <+> operator "&" <+> prettyTypeAt n' t2
     LetT x t1 t2 -> text "LET" <+> text x <> operator ":" <> prettyTypeAt n' t1 <+> operator "IN" <+> prettyTypeAt 0 t2
   )
   where

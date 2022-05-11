@@ -370,6 +370,20 @@ resolveType (FunctionT x tArg tRes) =
           resolveType tRes
         return $ FunctionT x tArg' tRes'
 
+resolveType (IntersectT t1 t2) = do
+  t1' <- resolveType t1
+  t2' <- resolveType t2
+  case (t1', t2') of
+    (ScalarT BoolT r1, ScalarT BoolT r2) -> do
+      r1' <- resolveTypeRefinement AnyS r1
+      r2' <- resolveTypeRefinement AnyS r2
+      return $ ScalarT BoolT (conjunction (Set.fromList [r1', r2']))
+    (ScalarT IntT r1, ScalarT IntT r2) -> do
+      r1' <- resolveTypeRefinement AnyS r1
+      r2' <- resolveTypeRefinement AnyS r2
+      return $ ScalarT IntT (conjunction (Set.fromList [r1', r2']))
+    (tt1, tt2) -> throwResError $ text "Cannot intersect" <+> pretty tt1 <+> text "and" <+> pretty tt2
+
 resolveType AnyT = return AnyT
 
 -- | Check that sort has no unknown datatypes

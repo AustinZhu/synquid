@@ -227,9 +227,17 @@ parseTypeAtom :: Parser RType
 parseTypeAtom = choice [
   parens parseType,
   parseScalarRefType,
+  parseTypeIntersection,
   parseUnrefTypeNoArgs,
   parseListType
   ]
+
+parseTypeIntersection :: Parser RType
+parseTypeIntersection = do
+  t1 <- parseTypeAtom
+  reservedOp "&"
+  t2 <- parseType
+  return $ IntersectT t1 t2
 
 parseUnrefTypeNoArgs = do
   baseType <- parseBaseType

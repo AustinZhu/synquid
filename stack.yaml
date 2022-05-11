@@ -3,10 +3,10 @@ flags:
     synquid: true
 packages:
   - '.'
-resolver: lts-15.3
+resolver: nightly-2022-05-05
 extra-deps:
-  - z3-4.3.1
-# extra-include-dirs:
-#  - <z3-home>/src/api
-# extra-lib-dirs:
-#  - <z3-home>/build  
+  - z3-408.2
+extra-include-dirs:
+ - /opt/homebrew/include
+extra-lib-dirs:
+ - /opt/homebrew/lib
