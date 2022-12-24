@@ -216,25 +216,28 @@ parseFunctionTypeWithArg = do
 -- and thus could be a scalar or a function type depending on whether followed by ->
 parseFunctionTypeMb = do
   argType <- parseUnrefTypeWithArgs <|> parseTypeAtom
-  parseFunctionRest argType <|> return argType
+  parseFunctionRest argType <|> parseIntersectionRest argType <|> return argType
   where
     parseFunctionRest argType = do
       reservedOp "->"
       returnType <- parseType
       return $ FunctionT ("arg" ++ show (arity returnType)) argType returnType
+    parseIntersectionRest t = do
+      reservedOp "&"
+      t2 <- parseType
+      return $ IntersectT t t2
 
 parseTypeAtom :: Parser RType
 parseTypeAtom = choice [
   parens parseType,
   parseScalarRefType,
-  parseTypeIntersection,
   parseUnrefTypeNoArgs,
   parseListType
   ]
 
 parseTypeIntersection :: Parser RType
 parseTypeIntersection = do
-  t1 <- parseTypeAtom
+  t1 <- parseType
   reservedOp "&"
   t2 <- parseType
   return $ IntersectT t1 t2

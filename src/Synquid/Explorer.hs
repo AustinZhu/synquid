@@ -143,6 +143,7 @@ generateI env t@(ScalarT _ _) = do
   d <- asks . view $ _1 . matchDepth
   maPossible <- runInSolver $ hasPotentialScrutinees env -- Are there any potential scrutinees in scope?
   if maEnabled && d > 0 && maPossible then generateMaybeMatchIf env t else generateMaybeIf env t
+generateI env t = error $ show $ (text "generateI: ") <+> pretty t
 
 -- | Generate a possibly conditional term type @t@, depending on whether a condition is abduced
 generateMaybeIf :: MonadHorn s => Environment -> RType -> Explorer s RProgram

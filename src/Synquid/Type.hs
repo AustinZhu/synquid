@@ -7,7 +7,7 @@ import Synquid.Util
 
 import Data.Maybe
 import Data.Either
-import Data.List
+import Data.List hiding (union)
 import qualified Data.Set as Set
 import Data.Set (Set)
 import qualified Data.Map as Map
@@ -306,6 +306,13 @@ intersection isBound (ScalarT baseT fml) (ScalarT baseT' fml') = case baseT of
                                   ScalarT (DatatypeT name (zipWith (intersection isBound) tArgs tArgs') (zipWith andClean pArgs pArgs')) (fml `andClean` fml')
   _ -> ScalarT baseT (fml `andClean` fml')
 intersection isBound (FunctionT x tArg tRes) (FunctionT y tArg' tRes') = FunctionT x tArg (intersection isBound tRes (renameVar isBound y x tArg tRes'))
+
+union _ t AnyT = AnyT
+union _ AnyT t = AnyT
+union isBound (ScalarT baseT fml) (ScalarT baseT' fml') = case (baseT, baseT') of
+  (DatatypeT name tArgs pArgs, DatatypeT _ tArgs' pArgs') -> ScalarT (DatatypeT name (zipWith (union isBound) tArgs tArgs') (zipWith andClean pArgs pArgs')) (fml `orClean` fml')
+  _ -> ScalarT baseT (fml `orClean` fml')
+union isBound (FunctionT x tArg tRes) (FunctionT y tArg' tRes') = FunctionT x tArg (union isBound tRes (renameVar isBound y x tArg tRes'))
 
 -- | Instantiate unknowns in a type
 typeApplySolution :: Solution -> RType -> RType

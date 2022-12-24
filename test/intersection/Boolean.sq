@@ -1,0 +1,21 @@
+data Boolean where
+  True' :: Boolean
+  False' :: Boolean
+
+type TTrue = {Boolean | _v == True'}
+type TFalse = {Boolean | _v == False'}
+
+not :: (x : TFalse -> TTrue) & (x : TTrue -> TFalse)
+not = ??
+
+and :: (x : TFalse -> y : TFalse -> TFalse) & (x : TFalse -> y : TTrue -> TFalse) & (x : TTrue -> y : TFalse -> TFalse) & (x : TTrue -> y : TTrue -> TTrue)
+and = ??
+
+or :: (x : TFalse -> y : TFalse -> TFalse) & (x : TFalse -> y : TTrue -> TTrue) & (x : TTrue -> y : TFalse -> TTrue) & (x : TTrue -> y : TTrue -> TTrue)
+or = ??
+
+implies :: (x : TFalse -> y : TFalse -> TTrue) & (x : TFalse -> y : TTrue -> TTrue) & (x : TTrue -> y : TFalse -> TFalse) & (x : TTrue -> y : TTrue -> TTrue)
+implies = ??
+
+xor :: (x : TFalse -> y : TFalse -> TFalse) & (x : TFalse -> y : TTrue -> TTrue) & (x : TTrue -> y : TFalse -> TTrue) & (x : TTrue -> y : TTrue -> TFalse)
+xor = ??

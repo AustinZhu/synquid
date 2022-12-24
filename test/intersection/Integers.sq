@@ -1,0 +1,20 @@
+type Nat = {Int | _v >= 0}
+
+type Pos = {Int | _v > 0}
+type Neg = {Int | _v < 0}
+
+zero :: {Int | _v == 0}
+inc :: x:Int -> {Int | _v == x + 1}
+dec :: x:Int -> {Int | _v == x - 1}
+neg :: x: Int -> {Int | _v == -x}
+
+lessThanZero :: x : Int -> y : Int -> z: Int -> {Int | (x < 0 ==> _v == y) && (x >= 0 ==> _v == z)}
+
+zero' :: {Int | _v >= 0} & {Int | _v <= 0}
+zero' = ??
+
+negate :: (x : Pos -> Neg) & (x : Neg -> Pos)
+negate = ??
+
+abs :: (x : Pos -> {Pos | _v == x}) & (x : Neg -> {Pos | _v == -x})
+abs = ??
